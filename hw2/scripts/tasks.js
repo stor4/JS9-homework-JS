@@ -2,7 +2,7 @@
  let weight = '88.3';
  let height = '1.75';
 
- const bmi = weight / (height * height);
+ const bmi = Number(weight) / (Number(height) * Number(height));
  console.log(bmi); // 28.8
 
  
@@ -36,10 +36,14 @@ console.log(Math.round (value));
 // 450 покаже 07:30
 // 1441 покаже 24:01
 
+
 const totalMinutes = 450;
 
 var hours = Math.floor(totalMinutes / 60);
 var minutes = Math.floor(totalMinutes % 60);
+
+minutes = (minutes < 10) ? '0' + minutes : minutes;
+hours = (hours < 10) ? '0' + hours : hours;
 
 console.log(`${hours} : ${minutes}`);
 
@@ -62,11 +66,11 @@ console.log(input);
    * Вивести в консоль суму, різницю, добуток, поділ та залишок від поділу їх один на одного.
    * */
 
-let number1 = prompt("Enter the number1:");
-let number2 = prompt("Enter the number2:");
+let number1 = Number(prompt("Enter the number1:"));
+let number2 = Number(prompt("Enter the number2:"));
 
-console.log(Number(number1) + Number(number2));
-console.log(Number(number1) - Number(number2));
-console.log(Number(number1) * Number(number2));
-console.log(Number(number1) / Number(number2));
-console.log(Number(number1) % Number(number2));
+console.log(number1 + number2);
+console.log(number1 - number2);
+console.log(number1 * number2);
+console.log(number1 / number2);
+console.log(number1 % number2);
