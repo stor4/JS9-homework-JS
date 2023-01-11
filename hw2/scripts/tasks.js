@@ -3,7 +3,7 @@
  let height = '1.75';
 
  const bmi = Number(weight) / (Number(height) * Number(height));
- console.log(bmi); // 28.8
+ console.log(Math.round(bmi)); // 28.8
 
  
 
