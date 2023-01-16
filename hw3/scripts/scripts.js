@@ -19,13 +19,14 @@ for(let i = 1; i <= 10; i++ ){
 
 // 2) Написати логіку знаходження факторіалу числа 10.
 
-let n = 5;
+fact = 10
+n = fact
 
-for (i = 1; i <= 10; i++) {
-  n *= i;
+for (let i = 1; i < n; i++) {
+  fact *= i;
 }
 
-console.log(n)
+console.log(fact)
 
 
 // 3) У пачці паперу 500 аркушів. За тиждень в офісі витрачається 1200 аркушів. Яку найменшу кількість пачок потрібно купити в офіс на 8 тижнів?
@@ -49,49 +50,45 @@ if (isNaN(n) || n > 36*3 || n < 1) {
 
 if (n > 27*3) {
   let floorNumber = Math.ceil((n/3) % 9);
-  console.log (`4th entrance, floor number is ${floorNumber}`);
+  console.log (`4th entrance, floor number is ${floorNumber || 9}`);
 }
 else {
   if (n > 18*3) {
     let floorNumber = Math.ceil((n/3) % 9);
-    console.log (`3rd entrance, floor number is ${floorNumber}`);
+    console.log (`3rd entrance, floor number is ${floorNumber || 9}`);
   }
   else {
     if (n > 9*3) {
       let floorNumber = Math.ceil((n/3 % 9));
-      console.log (`2nd entracne, floor number is ${floorNumber}`);
+      console.log (`2nd entracne, floor number is ${floorNumber || 9}`);
     }
     else {
       if (n <= 27){
         let floorNumber = Math.ceil((n/3) % 9);
-        console.log (`1st entrance, floor number is ${floorNumber}`);
+        console.log (`1st entrance, floor number is ${floorNumber || 9}`);
       }
     }
   }
 }
 }
 
-getFloorNumber (13)
+getFloorNumber (54);
 
 
 // 5) Вивести у консоль піраміду. Змінна вказує кількість рядків, з яких побудується піраміда. Піраміда повинна будуватися в однаковому візуальному вигляді між собою, але строго враховуючи кількість рядків
 
 
+let rows = 5;
+let string ="";
 
-function drawPyramide(rows) {
-  if (isNaN(rows)) {
-      console.log("impossible to draw, not a number")
-      return 0;
+for(let i=1; i<=rows; i++) {
+
+  for(let j=1; j<=rows-i; j++){
+    string += " ";
   }
-  for (let i = 1; i <= rows; i++) { 
-      for (let k = i; k < rows; k++) {
-        console.log(" "); 
-      }
-      for (let j = 0; j < i; j++) { 
-        console.log(j); 
-      }  
-
-    }
+  for(let k=0; k<2*i-1; k++){
+    string += "*";
+  }
+  string +="\n";
 }
-
-drawPyramide(25);
+console.log(string)
