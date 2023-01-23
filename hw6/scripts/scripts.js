@@ -54,37 +54,37 @@ function getAllValues (object) {
 }
 
 
-// /////
+/////
 
-// const obj = {
-//     id: 3,
-//     name: 'Vasya'
-// }
+const obj = {
+    id: 3,
+    name: 'Vasya'
+}
 
-// const secondObj = {
-//     id: 4,
-//     name: 'Katya'
-// }
+const secondObj = {
+    id: 4,
+    name: 'Katya'
+}
 
-// const arr = [
-//     {
-//         id: 1,
-//         name: 'Kolya'
-//     },
-//     {
-//         id: 2,
-//         name: 'Petya'
-//     },
-// ];
+const arr = [
+    {
+        id: 1,
+        name: 'Kolya'
+    },
+    {
+        id: 2,
+        name: 'Petya'
+    },
+];
 
-// insertIntoarr(obj, 2)
-// console.log(arr) 
-// /// [ {id: 1,name: 'Kolya'}, {id: 3, name: 'Vasya'}, {id: 2, name: 'Petya'} ]
+insertIntoarr(obj, 2)
+console.log(arr) 
+/// [ {id: 1,name: 'Kolya'}, {id: 3, name: 'Vasya'}, {id: 2, name: 'Petya'} ]
 
-// insertIntoarr(secondObj, 1)
-// console.log(arr) 
-// /// [ {id: 4,name: 'Katya'}, {id: 1,name: 'Kolya'}, {id: 3, name: 'Vasya'}, {id: 2, name: 'Petya'} ]
+insertIntoarr(secondObj, 1)
+console.log(arr) 
+/// [ {id: 4,name: 'Katya'}, {id: 1,name: 'Kolya'}, {id: 3, name: 'Vasya'}, {id: 2, name: 'Petya'} ]
 
-// function insertIntoarr (objectNumber, number) {
-//     arr.splice(number-1, 0, objectNumber)
-// }
+function insertIntoarr (objectNumber, number) {
+    arr.splice(number-1, 0, objectNumber)
+}
