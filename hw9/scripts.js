@@ -21,78 +21,64 @@ document.title = "ГЫГЫ";
 
 
         
-// fetch('https://open.er-api.com/v6/latest/USD').then(res => res.json())
-//         .then(data => {
-//                //эта функция запускается когда данные скачиваются.
-//                //остальной код работает РАНЬШЕ.
-//                //только ТУТ есть переменная data со скачанными данными
-//                console.log(data) //изучите структуру, получаемую с сервера в консоли
-               
-//                for(currency in data.rates) {
-//                 const fromOption = document.createElement('option')
-//                 fromOption.innerText = currency
-//                 from.appendChild(fromOption)
-//                 const toOption = document.createElement('option')
-//                 toOption.innerText = currency
-//                 to.appendChild(toOption)
-//                }
-//                let value1
-//                let value2
-//                const currencyValue = currency
-
-//                let result1
-//                let result2
-
-//                from.onchange = () => {
-//                value1 = document.getElementById('from').value;
-//                console.log(data.rates[currencyValue])}
-
-//                to.onchange = () => {
-//                 value2 = document.getElementById('to').value;
-//                 result2 = data.rates[currencyValue]
-//                 console.log(result2)}
-
-//                 rate.innerText(result2)
-
-               
-
-
-// })
-
-
-fetch('https://raw.githubusercontent.com/russ666/all-countries-and-cities-json/master/countries.min.json').then(res => res.json())
+fetch('https://open.er-api.com/v6/latest/USD').then(res => res.json())
      .then(data => {
             //эта функция запускается когда данные скачиваются.
             //остальной код работает РАНЬШЕ.
             //только ТУТ есть переменная data со скачанными данными
-            console.log(data) //изучите структуру, получаемую с сервера в консоли
-            
-            for (countries in data) {
-                const countriesList = document.createElement('option')
-                countriesList.innerText = countries
-                country.appendChild(countriesList)
-                countriesList.value = countries
-                const citySelector = document.getElementById('countriesList')
+            console.log(data.rates) //изучите структуру, получаемую с сервера в консоли
+            for(currency in data.rates) {
+                const fromOption = document.createElement('option')
+                fromOption.innerText = currency
+                from.appendChild(fromOption)
+                const toOption = document.createElement('option')
+                toOption.innerText = currency
+                to.appendChild(toOption)
+               }
+            from.onchange = () => {
+            rate.innerText = (data.rates[to.value] / data.rates[from.value])
             }
-
-
-            country.onchange = () => {
-                citySelect.innerText = ''
-
-                let value = document.getElementById('country') 
-                // console.log(country.value)
-                // console.log(data[value])
-
-                for (city in data[country.value]) {
-                const citiesList = document.createElement('option')
-                citySelect.appendChild(citiesList) 
-                citiesList.innerText = data[country.value][city]    
-                // console.log(city[2])
-                } 
+            to.onchange = () => {
+                rate.innerText = (data.rates[to.value] / data.rates[from.value])
             }
-            
-            
+            amount.oninput = () => {
+            result.innerText = amount.value / (data.rates[from.value] / data.rates[to.value])}
         })
+
+
+// fetch('https://raw.githubusercontent.com/russ666/all-countries-and-cities-json/master/countries.min.json').then(res => res.json())
+//      .then(data => {
+//             //эта функция запускается когда данные скачиваются.
+//             //остальной код работает РАНЬШЕ.
+//             //только ТУТ есть переменная data со скачанными данными
+//             console.log(data) //изучите структуру, получаемую с сервера в консоли
+            
+//             for (countries in data) {
+//                 const countriesList = document.createElement('option')
+//                 countriesList.innerText = countries
+//                 country.appendChild(countriesList)
+//                 countriesList.value = countries
+//                 const citySelector = document.getElementById('countriesList')
+//             }
+
+
+//             country.onchange = () => {
+//                 citySelect.innerText = ''
+
+//                 let value = document.getElementById('country') 
+//                 // console.log(country.value)
+//                 // console.log(data[value])
+
+//                 for (city in data[country.value]) {
+//                 const citiesList = document.createElement('option')
+//                 citySelect.appendChild(citiesList) 
+//                 citiesList.innerText = data[country.value][city]    
+//                 // console.log(city[2])
+//                 } 
+//             }
+            
+            
+//         })
 
 
 
@@ -122,6 +108,6 @@ fetch('https://raw.githubusercontent.com/russ666/all-countries-and-cities-json/m
 //   }
 // }
 
-//dom highlight cell +-
+// //dom highlight cell +-
 
-//dom highlight cross -
+// //dom highlight cross -
