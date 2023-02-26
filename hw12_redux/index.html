@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #magaz {
+            background-color: black;
+            height: 500px;
+            width: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-image: url(https://www.objectiv.tv/wp-content/uploads/2022/03/5366ea43-5736-4548-befe-0cc88895f3bd.jpg);
+            background-repeat: no-repeat;
+            background-position: 100%;
+            border: 1px solid black;  
+        }
+        #logo {
+            background-image: url(https://i.work.ua/employer_design/9/2/7/1705927_company_logo_1.png);
+            height: 100px;
+            width: 300px;
+            background-repeat: no-repeat;
+            position: relative;
+            left: 50px;
+            top: 15px;
+        }
+        
+        #showcase {
+            background-color: white;
+            height: 200px;
+            width: 90%;
+            display: flex;
+            justify-content: center;
+            flex-direction: row;
+            border: 1px solid black;
+        }
+        #beer,
+        #ciri,
+        #cyxapuku {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-left: 15px;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+        #buttons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 25px;
+        }
+        #warning {
+            width: 200px;
+            height: 20px;
+            background-color: white;
+            margin-top: 15px;
+            border: 1px solid black;
+            text-align: center;
+        }
+        #money {
+            color: white;
+            border: 1px solid black;
+            width: 55px;
+            font-size: 14px;
+            width: 70px;
+            
+        }
+        #wallet {
+            background-color: white;
+            width: 80px;
+            height: 15px;
+        }
+        #showcase_value1,
+        #showcase_value2,
+        #showcase_value3 {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+        #showcase_value1 > div,
+        #showcase_value2 > div,
+        #showcase_value3 > div {
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="magaz">
+        <div id="logo"></div>
+        <div id="showcase">
+
+            <div id="beer">
+                <h4 id="text1"></h4>
+                <div id="showcase_value1">
+                    <h5>Цена:</h5>
+                    
+                </div>
+            </div>
+
+            <div id="ciri">
+                <h4 id="text2"></h4>
+                <div id="showcase_value2">
+                    <h5>Цена:</h5>
+                    <div></div>
+                </div>
+            </div>
+
+            <div id="cyxapuku">
+                <h4 id="text3"></h4>
+                <div id="showcase_value3">
+                    <h5>Цена:</h5>
+                    <div></div>
+                </div>
+            </div>
+
+        </div>
+        <div id="buttons"></div>
+        <span id="warning"></span>
+        <div id="1">
+            <h5 id="money">Деньги в кошельке:</h5>
+            <input id="wallet" type="number">
+            </input>
+        </div>
+    </div> 
+
+
+    <script src="scripts.js"></script>
+</body>
+</html>
