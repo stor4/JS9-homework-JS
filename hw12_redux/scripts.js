@@ -114,6 +114,7 @@ option3.innerText = Object.keys(store.getState())[2]
 const input = document.createElement('input')
 buttons.appendChild(input)
 input.setAttribute('type', 'number');
+input.setAttribute('placeholder', 'Кол-во')
 input.style = `width: 50px`
 
 //Кнопка
@@ -128,6 +129,7 @@ btn.onclick = () => {store.dispatch({type: 'КУПИТЬ', ШО: productSelect.v
 
 const moneyInput = document.createElement('input')
 moneyInput.setAttribute('type', 'number')
+moneyInput.setAttribute('placeholder', 'Деньги')
 buttons.appendChild(moneyInput)
 moneyInput.style = `width: 50px`
 
