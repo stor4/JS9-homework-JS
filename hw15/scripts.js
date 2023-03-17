@@ -82,7 +82,7 @@ function fetchBasic(parent, url) {
 
 
 
-fetchBasic(document.body, 'https://swapi.dev/api/people/1/')
+// fetchBasic(document.body, 'https://swapi.dev/api/people/1/')
 
 
 
@@ -166,22 +166,22 @@ function Password(parent, open){
     
 
     this.getValue = function() {
-        return passwordInput.value
+        return this.passwordInput.value
     }
 
     this.setValue = function(newPassword) {
-        return passwordInput.value = newPassword
+        return this.passwordInput.value = newPassword
     }
     this.setOpen = function(value) {
-        if (value === true) {passwordInput.setAttribute('type', 'text')}
-        else if (value === false) {passwordInput.setAttribute('type', 'password')}
+        if (value === true) {this.passwordInput.setAttribute('type', 'text')}
+        else if (value === false) {this.passwordInput.setAttribute('type', 'password')}
     }
 
     this.getOpen = function() {
-        return passwordInput.getAttribute('type') !== 'password'
+        return this.passwordInput.getAttribute('type') !== 'password'
     }
     this.onChange = function() {
-        return passwordInput.oninput = function() {
+        return this.passwordInput.oninput = function() {
             return this.value
         } 
     }
@@ -296,6 +296,10 @@ function LoginForm (parent) {
         this.password.getOpen()
    }
 
+   this.onLogin = function() {
+        
+   }
+
 }
 
 
@@ -304,9 +308,9 @@ function loginPromise(parent){
     function executor(resolve, reject){
         const form = new LoginForm(parent)
         form.button.onclick = () => {
-            if (form.login.value && form.password.passwordInput.value) {
+            if (form.login.value && form.password.getValue()) {
                 resolve({ login: form.login.value, 
-                           password: form.password.passwordInput.value})
+                           password: form.password.getValue()})
 
 
             } else reject()
@@ -318,4 +322,4 @@ function loginPromise(parent){
     return new Promise(executor)
 }
 
-// loginPromise(document.body).then(({login, password}) => console.log(`Вы ввели ${login} и ${password}`))
+loginPromise(document.body).then(({login, password}) => console.log(`Вы ввели ${login} и ${password}`))
