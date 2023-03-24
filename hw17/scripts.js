@@ -98,17 +98,31 @@ pedastrianTrafficLight(square2)
 //     return new Promise(executor)
 // }
 
-function gql (url, queryText, variebles) {
-        return fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({query: queryText,
-                   variebles
-            })
+// function gql (url, queryText, variebles) {
+//         return fetch(url, {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'Accept': 'application/json'
+//             },
+//             body: JSON.stringify({query: queryText,
+//                    variebles
+//             })
+//         })
+// }
+
+function gql (url, query, variables) {
+    // let result
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({query,
+               variables
         })
+    }).then((res) => res.json())
 }
 
 ;(async () => {
