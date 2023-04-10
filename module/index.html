@@ -18,12 +18,30 @@
         header {
             min-height: 100px;
             background-color: #AAA;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        #loginDiv {
+            height: 50px;
+            width: 200px;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        #test {
+            height: 50px;
+            width: 50px;
+        }
+        #cartIcon {
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
     <header>
-        <div id='cartIcon'>5</div>
+        <div id='cartIcon' onclick="location.href='#/cart/'"><img id='test' src="png-transparent-computer-icons-shopping-cart-cheat-angle-service-desktop-wallpaper.png"><div id="cartValue"></div></div>
+        <div id="loginDiv"></div>
     </header>
     <div id='mainContainer'>
         <aside id='aside'>

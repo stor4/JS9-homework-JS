@@ -26,6 +26,28 @@ function createStore(reducer){
     }
 }
 
+function localStoredReducer(originalReducer, localStorageKey){
+    function wrapper(state, action){
+        // let testState = state
+        const original = originalReducer(state, action)
+        try {
+            const storageItem = localStorage.getItem(localStorageKey) || localStorage.localStorageKey //По другому оно не работает почему-то
+            const parsed = JSON.parse(storageItem)
+            if (!state) {
+                return parsed  
+            }
+        }
+        catch(e) {
+            localStorage.setItem(localStorageKey, JSON.stringify(original))
+            return original
+        }
+        localStorage.setItem(localStorageKey, JSON.stringify(original))
+        return original 
+        // ...... your magic here
+    }
+    return wrapper
+}
+
 function combineReducers(reducers){
     function totalReducer(state={}, action){
         const newTotalState = {}
@@ -40,6 +62,7 @@ function combineReducers(reducers){
         }
         return state
     }
+    // return localStoredReducer(totalReducer, localStorage.total)
 
     return totalReducer
 }
@@ -50,18 +73,43 @@ function jwtDecode(token) {
     }
     const splited = token.split('.')
     try {
-        JSON.parse(atob(splited[1]))
+        return JSON.parse(atob(splited[1]))
     } 
     catch(error) {
         return
     } 
 }
 
+
+
+
+// const reducers = {
+//     promise: promiseReducer, //допилить много имен для многих промисо
+//     auth: authReducer,     //часть предыдущего ДЗ
+//     cart: localStoredReducer(cartReducer, 'cart')     //часть предыдущего ДЗ
+// }
+// localStorage.cart = {}
 const reducers = {
     promise: promiseReducer, //допилить много имен для многих промисо
-    auth: authReducer,     //часть предыдущего ДЗ
-    //cart: cartReducer,     //часть предыдущего ДЗ
+    auth: localStoredReducer(authReducer, 'auth'),     //часть предыдущего ДЗ
+    cart: localStoredReducer(cartReducer, 'cart'),     //часть предыдущего ДЗ
 }
+
+// function authReducer(state={}, {type, token}) {
+//     if (type === 'AUTH_LOGIN') {
+//         const payload = jwtDecode(token)
+//         console.log(payload)
+//         if (payload) {
+//             localStorage.authToken = token
+//             return {token, payload}
+//         }
+//     }
+//     if (type === 'AUTH_LOGOUT') {
+//         localStorage.removeItem('authToken')
+//         return {}
+//     }
+//     return state
+// }
 
 const actionAuthLogin  = token => ({type: 'AUTH_LOGIN', token})
 const actionAuthLogout = ()    => ({type: 'AUTH_LOGOUT'})
@@ -70,21 +118,23 @@ function authReducer(state={}, {type, token}) {
     if (type === 'AUTH_LOGIN') {
         const payload = jwtDecode(token)
         console.log(payload)
-        if (payload) {
-            localStorage.authToken = token
-            return {token, payload}
-        }
+        // if (payload) {
+        //     localStorage.authToken = token
+        //     return {token, payload}
+        // }
+        return {token, payload}
+        
     }
     if (type === 'AUTH_LOGOUT') {
-        localStorage.removeItem('authToken')
+        // localStorage.removeItem('authToken')
         return {}
     }
     return state
-   
-
 }
 
-const totalReducer = combineReducers(reducers) 
+const totalReducer = combineReducers(reducers)
+// const totalReducer = localStoredReducer(combineReducers(reducers), localStorage) 
+
 function promiseReducer(state={}, {type, status, payload, error, name}){
     if (type === 'PROMISE'){
         //имена добавить
@@ -109,13 +159,124 @@ const actionPromise = (name, promise) =>
         catch (error){
             dispatch(actionRejected(name, error)) //в случае ошибки - сигнализируем redux, что промис несложился
         }
-    }
-
-
+}
 
 
 const store = createStore(totalReducer) //не забудьте combineReducers если он у вас уже есть
+// const store = createStore(localStoredReducer(totalReducer, 'test'))
+// debugger
+
 store.subscribe(() => console.log(store.getState()))
+
+
+
+//CartReducer
+
+function cartReducer (state={}, {type, count, good}) {
+    // if (state === undefined) {
+    //     return
+    // }
+
+    if(type === 'CART_ADD') {
+        // debugger
+        const currentCart = state[good._id]
+        // console.log(currentCart)
+        const result = currentCart ? currentCart.count + count : count
+        return {
+            ...state,
+            [good._id]: {good, count: result}
+        }
+    }
+
+    if(type === 'CART_SUB') {
+        // debugger
+        const currentCart = state[good._id]
+        const newCount = currentCart.count - count
+        if (newCount <= 0) {
+            const newCartState = {...state}
+        delete newCartState[good._id]
+        return newCartState
+        }
+
+        return {
+            ...state,
+            [good._id]: {good: currentCart.good, count: newCount}
+        }
+    }
+
+    if (type === 'CART_DEL') {
+        const newCartState = {...state}
+        delete newCartState[good._id]
+        return newCartState
+    }
+
+    if (type === 'CART_SET') {
+        if (count <= 0) {
+            const newCartState = {...state}
+        delete newCartState[good._id]
+        return newCartState
+        }
+        else {
+            return {
+                ...state,
+                [good._id]: {good, count}
+            }
+        }
+    }
+
+    if (type ==='CART_CLEAR') {
+        return {}
+    }
+    return state
+
+}
+
+const actionCartAdd = (good, count=1) => ({type: 'CART_ADD', count, good})
+const actionCartSub = (good, count=1) => ({type: 'CART_SUB', count, good})
+const actionCartDel = (good) => ({type: 'CART_DEL', good})
+const actionCartSet = (good, count=1) => ({type: 'CART_SET', count, good})
+const actionCartClear = () => ({type: 'CART_CLEAR'})
+
+
+store.subscribe(() => console.log(store.getState())) //
+
+console.log(store.getState()) //{}
+
+// // store.dispatch(actionCartAdd({_id: 'пиво', price: 50})) 
+// store.dispatch(actionCartAdd({_id: 'пиво', price: 50})) 
+// // {пиво: {good: {_id: 'пиво', price: 50}, count: 1}}
+// store.dispatch(actionCartAdd({_id: 'чипсы', price: 75})) 
+// // {
+// //     // пиво: {good: {_id: 'пиво', price: 50}, count: 1},
+// //     // чипсы: {good: {_id: 'чипсы', price: 75}, count: 1},
+// // //}
+// store.dispatch(actionCartAdd({_id: 'пиво', price: 50}, 5)) 
+// // // {
+// //     // пиво:  {good: {_id: 'пиво', price: 50}, count: 6},
+// //     // чипсы: {good: {_id: 'чипсы', price: 75}, count: 1},
+// // //}
+// store.dispatch(actionCartSet({_id: 'чипсы', price: 75}, 2)) 
+// // // {
+// //     // пиво:  {good: {_id: 'пиво', price: 50}, count: 6},
+// //     // чипсы: {good: {_id: 'чипсы', price: 75}, count: 2},
+// // //}
+
+// store.dispatch(actionCartSub({_id: 'пиво', price: 50}, 4)) 
+// // // {
+// //     // пиво:  {good: {_id: 'пиво', price: 50}, count: 2},
+// //     // чипсы: {good: {_id: 'чипсы', price: 75}, count: 2},
+// // //}
+
+// store.dispatch(actionCartDel({_id: 'чипсы', price: 75})) 
+// // // {
+// //     // пиво:  {good: {_id: 'пиво', price: 50}, count: 2},
+// // //}
+
+// store.dispatch(actionCartClear())  // {}
+
+// //
+
+  
 
 const drawCategory = (state) => {
     const [,route] = location.hash.split('/')
@@ -147,6 +308,10 @@ const drawCategory = (state) => {
 
 store.subscribe(drawCategory)
 
+const orderbtn = document.createElement('button')
+
+orderbtn.innerText = 'Добавить в корзину'
+
 store.subscribe(() => {
     const [,route] = location.hash.split('/')
     if (route !== 'good') return
@@ -156,42 +321,24 @@ store.subscribe(() => {
         main.innerHTML = `<img src='https://cdn.dribbble.com/users/63485/screenshots/1309731/infinite-gif-preloader.gif' />`
     }
     if (status === 'FULFILLED'){
-        const {name, price, description, images} = payload
+        const {name, price, description, images, } = payload
         main.innerHTML = `<h1>${name}</h1>
                          <img src="http://shop-roles.node.ed.asmer.org.ua/${images[0].url}" style="height: 200px; width: 200px;">
                          <p>Цена: ${price}</p>
                          <p>${description}</p>
-                         <input type='button'> 
                          `
+        orderbtn.onclick = () => store.dispatch(actionCartAdd(payload, ))
+        if (store.getState().auth.token) {
+            main.appendChild(orderbtn)
+        }
+      
+
         for (const _id of store.getState().promise.OneGood.payload){
             // const peopleId = peopleUrl.split('/people/')[1].slice(0,-1)
             main.innerHTML += `<a href="#/item/${_id}"></a>`
         }
     }
 })
-
-// store.subscribe(() => {  
-//     const [,route] = location.hash.split('/')
-//     if (route !== 'films') return
-
-//     const {status, payload, error} = store.getState().promise//.имя одно
-//     if (status === 'PENDING'){
-//         main.innerHTML = `<img src='https://cdn.dribbble.com/users/63485/screenshots/1309731/infinite-gif-preloader.gif' />`
-//     }
-//     if (status === 'FULFILLED'){
-//         const {title, opening_crawl, characters} = payload
-//         main.innerHTML = `<h1>${title}</h1>
-//                          <p>${opening_crawl}</p>
-//                          `
-//         for (const peopleUrl of characters){
-//             const peopleId = peopleUrl.split('/people/')[1].slice(0,-1)
-//             main.innerHTML += `<a href="#/people/${peopleId}">Герой №${peopleId}</a>`
-//         }
-//     }
-// })
-
-
-
 
 
 const actionGetPeople = id =>  //имя другое
@@ -217,150 +364,6 @@ store.subscribe(() => {
     }
 })
 
-// window.onhashchange = () => {
-//     const [,route, _id] = location.hash.split('/')
-
-//     const routes = {
-//         // people(){
-//         //     console.log('People', _id)
-//         //     store.dispatch(actionGetPeople(_id))
-//         // },
-//         // films(){
-//         //     store.dispatch(actionGetFilm(_id))
-//         // },
-//         category() {
-//             store.dispatch(actionCategoryById(_id))
-//         },
-//         good(){
-//             //тут был store.dispatch goodById
-//             store.dispatch(actionGoodById(_id))
-//             console.log('good', _id)
-//         },
-//         login(){
-//             console.log('А ТУТ ЩА ДОЛЖНА БЫТЬ ФОРМА ЛОГИНА')
-//             //нарисовать форму логина, которая по нажатию кнопки Login делает store.dispatch(actionFullLogin(login, password))
-//         },
-//         //register(){
-//             ////нарисовать форму регистрации, которая по нажатию кнопки Login делает store.dispatch(actionFullRegister(login, password))
-//         //},
-//     }
-
-//     if (route in routes){
-//         routes[route]()
-//     }
-// }
-
-// window.onhashchange()
-
-
-
-
-
-// Запросы
-
-// # Запросы
-// # Корневые категории(список)
-// query rootCats($q:String){
-//   CategoryFind(query:$q){
-//     _id name parent{
-//       _id name
-//     }
-//   }
-// }
-
-// # Получение одно категории с товарами и картинками
-// query OneCat($q1:String){
-//   CategoryFindOne(query:$q1){
-//     _id name goods {_id, name, price, images{url}}
-//     parent{_id name}
-//     subCategories {_id name}
-//   }
-// }
-
-// # Получение товара с описанием и картинками
-// query oneGoods($q3:String){
-//   GoodFindOne(query:$q3){
-//     _id name price description images{url}
-//   }
-// }
-
-// # Запрос на регистрацию
-// mutation Reg($login:String, $password:String){
-//   UserUpsert(user:{login:$login, password:$password}){
-//     _id, login
-//   }
-// }
-
-// # Запрос на логин
-// query login($login:String, $password:String){
-//   login(login:$login, password:$password)
-// }
-
-// # Запрос истории заказов
-// query orderFind{
-//   OrderFind(query:"[{}]"){
-//     _id total orderGoods{good {_id, name}, total, price, count}
-//   }
-// }
-
-// # Запрос на оформление заказа
-// mutation newOrder{
-//   OrderUpsert(order:{orderGoods:[{good:{_id: "64031b15d5e3301cba63a55f"}, count:2}]}) {
-//     _id
-//     createdAt
-//     total
-//   }
-// }
-
-// Вэрайблы для запросов
-
-// {
-
-//     "q":"[{\"parent\":null}]",
-//     "q1":"[{\"_id\":\"6262ca7dbf8b206433f5b3d1\"}]",
-//     "q3":"[{\"_id\":\"62d30938b74e1f5f2ec1a124\"}]",
-//     "login": "stor4",
-//     "password": "12345"
-    
-//}
-
-// Ну и сами запросы
-
-// async function getGql(query, variables={}) {
-//     const url = "http://shop-roles.node.ed.asmer.org.ua/graphql"
-//     let result
-//     await fetch(url, {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json',
-//             'Accept': 'application/json'
-//         },
-//         body: JSON.stringify({query,
-//                variables
-//         })
-//     }).then((res) => result = res.json())
-//     console.log(result)
-    
-//     // try {
-//     //     for(let i in result) {
-//     //         console.log(i)
-//     //         if(i == 'errors') {
-//     //             throw new Error('Allo ebat')
-                
-//     //         }
-            
-//     // }
-//     // catch (e){
-//     //     return e
-//     // }
-   
-    
-//     // return result
-
-    
-// }
-
-
 
 
 async function getGql(query, variables={}) {
@@ -372,7 +375,7 @@ async function getGql(query, variables={}) {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          ...(localStorage.authToken?{authorization: `Bearer ` + localStorage.authToken} : {})
+          ...(store.getState().auth.token?{authorization: `Bearer ` + store.getState().auth.token} : {})
         },
         body: JSON.stringify({
           query,
@@ -395,7 +398,8 @@ function gql (url, query, variables) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            
         },
         body: JSON.stringify({query,
                variables
@@ -458,55 +462,357 @@ const userUpsert = `mutation Reg($login:String, $password:String){
       _id, login
     }
   }`
-const gqlUserUpsert = () => gql("http://shop-roles.node.ed.asmer.org.ua/graphql", userUpsert, {login: "stor4", password: "12345"})
+// const gqlUserUpsert = () => gql("http://shop-roles.node.ed.asmer.org.ua/graphql", userUpsert, {login: "stor4", password: "12345"})
 // console.log(gqlUserUpsert())
+// let actionUpsert = (login, password) => actionPromise('UserUpsert', getGql(userUpsert, {login: login, password: password}))
+const actionUpsert = (login, password) => actionPromise('UserUpsert', gql("http://shop-roles.node.ed.asmer.org.ua/graphql", userUpsert, {login: login, password: password}))
+
+
+
+// console.log(store.dispatch(actionUpsert('stas55', 'lol')))
+
+const upsertForm = () => {
+    
+    const [,route] = location.hash.split('/')
+    if (route !== 'upsert') return
+
+    main.innerHTML = `<h1>РЕГИСТРАЦИЯ</h1>
+                      <input placeholder='Логин' id='upsertLogin'></input>
+                      <input placeholder='Пароль' id='upsertPsw'></input>
+                      <button id='upsertbtn'>Зарегаться</button>
+    `
+
+    const login = document.getElementById('upsertLogin')
+    const psw = document.getElementById('upsertPsw')
+    const btn = document.getElementById('upsertbtn')
+    btn.onclick = async () => {
+        await store.dispatch(actionUpsert(login.value, psw.value))
+        const {data, errors} = store.getState().promise.UserUpsert.payload
+        
+        if (errors) {
+            return
+        }
+        await store.dispatch(actionFullLogin(login.value, psw.value))
+    }
+
+
+}
+
+store.subscribe(upsertForm)
 
 // Запрос на логин
 
 const userLogin = `query login($login:String, $password:String){
     login(login:$login, password:$password)
 }`
-const gqlUserLogin = () => gql("http://shop-roles.node.ed.asmer.org.ua/graphql", userLogin, {login: "stor4", password: "12345"})
+// const gqlUserLogin = () => gql("http://shop-roles.node.ed.asmer.org.ua/graphql", userLogin, {login: "stor4", password: "12345"})
 // console.log(gqlUserLogin())
+const actionLogin = (login, password) => actionPromise('UserLogin', getGql(userLogin, {login: login, password: password}))
+
+
+
+const loginForm = () => {
+    const [,route] = location.hash.split('/')
+    if (route !== 'login') return
+
+    main.innerHTML = `<h1>ВХОД</h1>
+                      <input placeholder='Логин' id='loginvalue'></input>
+                      <input placeholder='Пароль' id='pswvalue'></input>  
+                     <button id='loginbtn'>Войти</button> 
+                     `
+    const login = document.getElementById('loginvalue')
+    const psw = document.getElementById('pswvalue')
+    const btn = document.getElementById('loginbtn')
+    btn.onclick = () => store.dispatch(actionFullLogin(login.value, psw.value))
+}
+
+store.subscribe(loginForm)
+
+const actionFullLogin = (login, password) => {
+    return  async dispatch => {
+        // debugger
+        const token = await dispatch(actionLogin(login, password))  
+        console.log(token)
+        if (typeof token === 'string') {
+            return dispatch(actionAuthLogin(token))
+        } else return
+
+    }
+}
+
+
+
+
+const loginValue = document.createElement('div')
+const logoutbtn = document.createElement('a')
+const upsertBTN = document.createElement('a')
+const historyBtn = document.createElement('a')
+loginDiv.appendChild(loginValue)
+loginDiv.appendChild(logoutbtn)
+
+logoutbtn.style = `opacity: 0;`
+// upsertBTN.style = `opacity: 0;`
+historyBtn.innerText = 'История заказов'
+historyBtn.href = "#/history/"
+const cartIcon = document.getElementById('cartIcon')
+const cartValue = document.getElementById('cartValue')
+
+
+const loginStatus = (state) => {
+    // console.log(Object.keys(store.getState().auth))
+   
+    let tokenCheck
+
+    if(tokenCheck !== undefined) {
+        loginValue.innerHTML = 'Привет, анониим!'
+        return
+    }
+    const {token, payload} = store.getState().auth || {}//.имя третье
+
+    if(!payload) {
+        loginValue.innerHTML = 'Привет, анониим!'
+        logoutbtn.style = `opacity: 1;`
+        logoutbtn.innerText = 'Войти'
+        // logoutbtn.onclick = () => main.innerHTML = `<a href="#/login/"></a>`
+        logoutbtn.href = "#/login/"
+        loginDiv.appendChild(upsertBTN)
+        // upsertBTN.style = `opacity: 1;`
+        upsertBTN.innerText = 'Зарегаться'
+        upsertBTN.href = "#/upsert/"
+        historyBtn.remove()
+        cartIcon.removeAttribute('onclick')
+        cartIcon.style = `cursor: auto;`
+        
+    }
+
+    if (payload) {
+        tokenCheck = store.getState().auth.token
+        
+        loginValue.innerHTML = `Привет, ${store.getState().auth.payload.sub.login}`
+        // console.log('aga')
+        logoutbtn.style = `opacity: 1;`
+        // upsertBTN.style = `opacity: 0;`
+        upsertBTN.remove()
+        logoutbtn.innerText  = 'Выйти'
+        logoutbtn.removeAttribute('href')
+        logoutbtn.onclick = () => {
+            store.dispatch(actionAuthLogout())
+        }
+        loginDiv.appendChild(historyBtn)
+        cartIcon.onclick = () => location.href = '#/cart/'
+        cartIcon.style = `cursor: pointer;`
+        cartValue.innerHTML = Object.keys(store.getState().cart).length
+        
+    }
+}
+
+
+store.subscribe(loginStatus)
+
+
+
+
+// debugger
+// console.log(store.dispatch(actionFullLogin('stor4', '12345')))
+
+// store.dispatch(actionFullLogin('stor4', '12345'))
 
 // Запрос истории заказов
 
-const orderFind = `query orderFind{
-    OrderFind($query:String){
+const orderFind = `query orderFind($query: String){
+    OrderFind(query:$query){
       _id total orderGoods{good {_id, name}, total, price, count}
-    }`
-const gqlOrderFind = () => gql("http://shop-roles.node.ed.asmer.org.ua/graphql", orderFind, {query: "[{}]"})
+    }}`  
+
+// const gqlOrderFind = () => gql("http://shop-roles.node.ed.asmer.org.ua/graphql", orderFind, {query: {}})
+// const actionOrderFind = () => actionPromise('OrderFind', getGql("http://shop-roles.node.ed.asmer.org.ua/graphql", orderFind, {query: JSON.stringify([{}])}))
 // console.log(gqlOrderFind())
+const actionOrderFind = () => actionPromise('OrderFind', getGql(orderFind, {query: JSON.stringify([{}])}))
+// actionOrderFind()
+
+const orderHistory = () => {
+    const [,route] = location.hash.split('/')
+    if (route !== 'history') return
+
+    // store.dispatch(actionOrderFind())
+
+    const {status, payload, error} = store.getState().promise.OrderFind || {}//.имя одно
+    if (status === 'PENDING'){
+        main.innerHTML = `<img src='https://cdn.dribbble.com/users/63485/screenshots/1309731/infinite-gif-preloader.gif' />`
+    }
+    if (status === 'FULFILLED') {
+        main.innerHTML = `<h1>ИСТОРИЯ ЗАКАЗОВ</h1>
+                               
+                         `
+        for (let item in payload) {
+           const div = document.createElement('div')
+           main.appendChild(div)
+           div.style = `margin: 15px;`
+
+           const orderNumber = document.createElement('div')
+           orderNumber.innerText = `ID заказа: ${payload[item]._id}`
+           div.appendChild(orderNumber)
+
+           const orderSum = document.createElement('div')
+           orderSum.innerText = `Сумма заказа: ${payload[item].total}`
+           div.appendChild(orderSum)
+
+        //    for (let i in payload[item].orderGoods) {
+        //     const goods = document.createElement('div')
+        //     goods.innerText = [i].good.name
+        //     div.appendChild(goods)
+        //    }
+            
+        }
+       
+
+            
+    }
+
+
+}
+store.subscribe(orderHistory)
 
 // Запрос оформления заказа
 
-// const orderUpsert = `mutation newOrder{
-//     OrderUpsert(order:{orderGoods:[{good:{_id: "64031b15d5e3301cba63a55f"}, count:2}]}) {
-//       _id
-//       createdAt
-//       total
-//     }
-//   }`
-// const gqlOrderUpsert = () => gql("http://shop-roles.node.ed.asmer.org.ua/graphql", orderUpsert, {query: "[{}]"})
+const orderUpsert = `mutation newOrder($orderGoods: [OrderGoodInput]) {
+    OrderUpsert(order: {orderGoods: $orderGoods}) {
+      _id
+      createdAt
+      total
+    }
+  }`;
+  
+const actionOrderUpsert1 = (orderGoods) => {
+    for (const key in orderGoods) {
+        if (orderGoods.hasOwnProperty(key)) {
+            orderGoods[key].good = {_id: orderGoods[key].good._id};
+        }
+    }
+    console.log(Object.values(orderGoods))
+
+
+    actionPromise('OrderUpsert', gql("http://shop-roles.node.ed.asmer.org.ua/graphql", orderUpsert, Object.values(orderGoods)))
+}
+
+
+const actionOrderUpsert = () => {
+    return async dispatch => {
+        const orderGoods = Object.values(store.getState().cart)
+
+        for (const key in orderGoods) {
+            orderGoods[key].good = {_id: orderGoods[key].good._id}; 
+        }
+        console.log(orderGoods)
+        // dispatch(actionPromise('OrderUpsert', gql("http://shop-roles.node.ed.asmer.org.ua/graphql", orderUpsert, orderGoods)))
+        dispatch(actionPromise('OrderUpsert', getGql(orderUpsert, {orderGoods: orderGoods})))
+    }
+}
+
+
+// console.log(actionOrderUpsert())
+
+
+
 
 // debugger
 console.log(store.getState())
 
 
 
+const cartPage = () => {
+    const [,route] = location.hash.split('/')
+    if (route !== 'cart') return
+
+    main.innerHTML = `<h1>КОРЗИНА</h1>
+                      <div id='cartList'></div>
+                          
+    `
+
+    if(!store.getState().auth.token) {
+        return
+    }
+
+    // const payload  = store.getState().cart
+    const cartList = document.getElementById('cartList')
+    for (let item in store.getState().cart) {
+        // debugger
+        const div = document.createElement('div')
+        cartList.appendChild(div)
+        div.style = `display: flex;
+        flex-direction: row;
+        margin: 15px;`
+
+        // const number = document.createElement('div')
+        // number.innerText = 
+
+        const name = document.createElement('div')
+        // console.log(payload)
+        // console.log(store.getState().cart[item])
+        name.innerText = store.getState().cart[item].good.name
+        div.appendChild(name)
+        name.style.margin = '15px'
+
+        const price = document.createElement('div')
+        price.innerText = `${store.getState().cart[item].good.price} тенге`
+        div.appendChild(price)
+        price.style.margin = '15px'
+
+        const count = document.createElement('div')
+        // count.setAttribute('type', 'number')
+        count.style.width = '50px'
+        name.style.margin = '15px'
+        count.innerHTML = store.getState().cart[item].count
+        div.appendChild(count)
+
+        const add = document.createElement('button')
+        add.innerText = '+1'
+        add.onclick = () => store.dispatch(actionCartAdd({_id: store.getState().cart[item].good._id, price: store.getState().cart[item].good.price, name: store.getState().cart[item].good.name}))
+        div.appendChild(add)
+
+        const sub = document.createElement('button')
+        sub.innerText = '-1'
+        sub.onclick = () => store.dispatch(actionCartSub({_id: store.getState().cart[item].good._id, price: store.getState().cart[item].good.price, name: store.getState().cart[item].good.name}))
+        div.appendChild(sub)
+
+        const set = document.createElement('input')
+        set.setAttribute('type', 'number')
+        set.innerHTML = item.count
+        set.onchange = () => store.dispatch(actionCartSet({_id: store.getState().cart[item].good._id, price: store.getState().cart[item].good.price, name: store.getState().cart[item].good.name}, set.value))
+        div.appendChild(set)
+
+        const del = document.createElement('button')
+        del.innerText = 'Удалить'
+        del.onclick = () => store.dispatch(actionCartDel({_id: store.getState().cart[item].good._id, price: store.getState().cart[item].good.price, name: store.getState().cart[item].good.name}))
+        div.appendChild(del)
+    }
+
+    const clearCart = document.createElement('button')
+    clearCart.innerText = 'Очистить корзину'
+    main.appendChild(clearCart)
+    clearCart.onclick = () => store.dispatch(actionCartClear())
+
+    const makeOrderBtn = document.createElement('button')
+    makeOrderBtn.innerText = 'Сделать заказ'
+    main.appendChild(makeOrderBtn)
+
+    makeOrderBtn.onclick = async () => {
+        // console.log('test')
+        await store.dispatch(actionOrderUpsert())
+        await store.dispatch(actionCartClear())
+    }
+
+}
+
+
+
+store.subscribe(cartPage)
 
 
 window.onhashchange = () => {
     const [,route, _id] = location.hash.split('/')
 
     const routes = {
-        // people(){
-        //     console.log('People', _id)
-        //     store.dispatch(actionGetPeople(_id))
-        // },
-        // films(){
-        //     store.dispatch(actionGetFilm(_id))
-        // },
         category() {
             store.dispatch(actionCategoryById(_id))
         },
@@ -518,18 +824,33 @@ window.onhashchange = () => {
         login(){
             console.log('А ТУТ ЩА ДОЛЖНА БЫТЬ ФОРМА ЛОГИНА')
             //нарисовать форму логина, которая по нажатию кнопки Login делает store.dispatch(actionFullLogin(login, password))
+            loginForm()
         },
-        //register(){
+        upsert(){
+            upsertForm()
+            console.log('ТУТ РЕГИСТРАЦИЯ')
             ////нарисовать форму регистрации, которая по нажатию кнопки Login делает store.dispatch(actionFullRegister(login, password))
-        //},
+        },
+        cart(){
+            console.log('КОРЗИНА')
+            // store.dispatch(actionOrderUpsert())
+            cartPage()
+        },
+        history(){
+            console.log('ИСТОРИЯ ЗАКАЗОВ')
+            store.dispatch(actionOrderFind())
+            // orderHistory()
+        }
+
     }
 
     if (route in routes){
         routes[route]()
     }
 }
-
-
+// debugger
+// store.dispatch(actionFullLogin('stor4', '12345'))
+// actionFullLogin('stor4', '12345')
 
 
 // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOnsiaWQiOiI2Mzc3ZTEzM2I3NGUxZjVmMmVjMWMxMjUiLCJsb2dpbiI6InRlc3Q1IiwiYWNsIjpbIjYzNzdlMTMzYjc0ZTFmNWYyZWMxYzEyNSIsInVzZXIiXX0sImlhdCI6MTY2ODgxMjQ1OH0.t1eQlRwkcP7v9JxUPMo3dcGKprH-uy8ujukNI7xE3A0"
@@ -537,28 +858,6 @@ window.onhashchange = () => {
 
 // const store = createStore(authReducer)
 store.subscribe(() => console.log(store.getState())) 
-
-store.dispatch(actionAuthLogin(localStorage.authToken))
-/*{
-    token: "eyJhbGc.....", 
-    payload: {
-      "sub": {
-        "id": "6377e133b74e1f5f2ec1c125",
-        "login": "test5",
-        "acl": [
-          "6377e133b74e1f5f2ec1c125",
-          "user"
-        ]
-      },
-      "iat": 1668812458
-    }
-}*/
-// store.dispatch(actionAuthLogout()) 
-
-
-
-
-
 
 
 
