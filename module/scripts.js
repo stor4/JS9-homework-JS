@@ -384,7 +384,7 @@ async function getGql(query, variables={}) {
       })
       result = await queryResult.json()
       if (result.errors) {
-        throw new Error('Wrong variable')
+        throw new Error(JSON.stringify(result.errors))
       }
       return Object.values(result.data)[0]
     } catch (error) {
@@ -486,13 +486,14 @@ const upsertForm = () => {
     const psw = document.getElementById('upsertPsw')
     const btn = document.getElementById('upsertbtn')
     btn.onclick = async () => {
-        await store.dispatch(actionUpsert(login.value, psw.value))
-        const {data, errors} = store.getState().promise.UserUpsert.payload
+        // await store.dispatch(actionUpsert(login.value, psw.value))
+        // const {data, errors} = store.getState().promise.UserUpsert.payload
         
-        if (errors) {
-            return
-        }
-        await store.dispatch(actionFullLogin(login.value, psw.value))
+        // if (errors) {
+        //     return
+        // }
+        // await store.dispatch(actionFullLogin(login.value, psw.value))
+        await store.dispatch(actionFullRegister(login.value, psw.value))
     }
 
 
@@ -538,6 +539,17 @@ const actionFullLogin = (login, password) => {
         } else return
 
     }
+}
+
+const actionFullRegister = (login, password) => {
+     return async dispatch => {
+        await dispatch(actionUpsert(login, password))
+        const {data, errors} = store.getState().promise.UserUpsert.payload
+        if (errors) {
+            return
+        }
+        await dispatch(actionFullLogin(login, password))
+     }
 }
 
 
